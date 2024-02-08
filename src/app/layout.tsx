@@ -1,14 +1,14 @@
 import '@/styles/globals.css'
-import { Inter as FontSans } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import { cn } from '@/lib/utils'
 import type { Metadata } from 'next'
 import { SessionProvider } from 'next-auth/react'
 import { auth } from '@/auth'
 import { Toaster } from '@/components/ui/sonner'
 
-export const fontSans = FontSans({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-sans',
+  variable: '--font-inter',
 })
 
 export const metadata: Metadata = {
@@ -25,7 +25,7 @@ export default async function RootLayout({
   return (
     <SessionProvider session={session}>
       <html lang='en'>
-        <body className={cn('min-h-screen bg-background font-sans antialiased', fontSans.variable)}>
+        <body className={cn('min-h-screen bg-background font-sans antialiased', inter.variable)}>
           {children}
           <Toaster />
         </body>
