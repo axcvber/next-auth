@@ -17,8 +17,10 @@ import { useCurrentUser } from '@/hooks/use-current-user'
 import { FormError } from '@/components/form-error'
 import { FormSuccess } from '@/components/form-success'
 import { UserRole } from '@prisma/client'
+import { useTranslations } from 'next-intl'
 
 const SettingsPage = () => {
+  const t = useTranslations('labels')
   const user = useCurrentUser()
 
   const [error, setError] = useState<string | undefined>()
@@ -57,7 +59,7 @@ const SettingsPage = () => {
   return (
     <Card className='w-[600px]'>
       <CardHeader>
-        <p className='text-2xl font-semibold text-center'>⚙️ Settings</p>
+        <p className='text-2xl font-semibold text-center'>⚙️ {t('settings')}</p>
       </CardHeader>
       <CardContent>
         <Form {...form}>

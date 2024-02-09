@@ -1,17 +1,27 @@
 import NextAuth from 'next-auth'
-
 import authConfig from '@/auth.config'
 import { DEFAULT_LOGIN_REDIRECT, apiAuthPrefix, authRoutes, publicRoutes } from '@/routes'
+import createIntlMiddleware from 'next-intl/middleware'
+import { localePrefix, locales } from '@/navigation'
+import { generatePathnameRegex } from '@/lib/utils'
 
-const { auth } = NextAuth(authConfig)
+const intlMiddleware = createIntlMiddleware({
+  locales,
+  localePrefix,
+  defaultLocale: locales[0],
+})
+
+export const { auth } = NextAuth(authConfig)
 
 export default auth((req) => {
   const { nextUrl } = req
   const isLoggedIn = !!req.auth
-
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix)
-  const isPublicRoute = publicRoutes.includes(nextUrl.pathname)
-  const isAuthRoute = authRoutes.includes(nextUrl.pathname)
+
+  const authPathnameRegex = generatePathnameRegex(authRoutes)
+  const publicPathnameRegex = generatePathnameRegex(publicRoutes)
+  const isPublicRoute = publicPathnameRegex.test(req.nextUrl.pathname)
+  const isAuthRoute = authPathnameRegex.test(req.nextUrl.pathname)
 
   if (isApiAuthRoute) {
     return
@@ -21,7 +31,8 @@ export default auth((req) => {
     if (isLoggedIn) {
       return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl))
     }
-    return
+    console.log('AUTH ROUTE')
+    return intlMiddleware(req)
   }
 
   if (!isLoggedIn && !isPublicRoute) {
@@ -29,16 +40,15 @@ export default auth((req) => {
     if (nextUrl.search) {
       callbackUrl += nextUrl.search
     }
-
     const encodedCallbackUrl = encodeURIComponent(callbackUrl)
-
     return Response.redirect(new URL(`/auth/login?callbackUrl=${encodedCallbackUrl}`, nextUrl))
   }
+  console.log('PRIVATE OR PUBLIC ROUTE')
 
-  return
+  return intlMiddleware(req)
 })
 
 // Optionally, don't invoke Middleware on some paths
 export const config = {
-  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
+  matcher: ['/((?!api|_next|.*\\..*).*)'],
 }
